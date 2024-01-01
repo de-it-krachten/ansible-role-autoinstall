@@ -1,0 +1,114 @@
+#cloud-config
+autoinstall:
+  version: 1
+  locale: en_US.UTF-8
+  keyboard:
+    layout: us
+  network:
+    network:
+      version: 2
+      ethernets:
+{% for item in autoinstall_network.devices %}
+{% if autoinstall_network.bonds is undefined %}
+        {{ item.device }}:
+          optional: {{ item.optional | bool | ternary('yes', 'no' ) }}
+{% if item.dhcp|bool %}
+          dhcp4: yes
+{% else %}
+          dhcp4: no
+{% if item.ip is defined %}
+          addresses: {{ item.ip }}
+{% endif %}
+{% if network_generic.nameservers is defined %}
+          nameservers:
+            search: {{ network_generic.search }}
+            addresses: {{ network_generic.nameservers }}
+{% endif %}
+{% if network_generic.gateway is defined %}
+          gateway4: {{ network_generic.gateway }}
+{% endif %}
+{% endif %}
+{% else %}
+        {{ item.device }}: {}
+{% endif %}
+{% endfor %}
+{% if autoinstall_network.bonds is defined %}
+      bonds:
+{% for item in autoinstall_network.bonds %}
+        {{ item.name }}:
+{% if item.dhcp|bool %}
+          dhcp4: yes
+{% else %}
+          dhcp4: no
+          addresses: {{ item.ip }}
+{% endif %}
+          interfaces: {{ item.interfaces }}
+{% if network_generic.nameservers is defined %}
+          parameters:
+            mode: active-backup
+            primary: {{ item.interfaces[0] }}
+          nameservers:
+            search: {{ network_generic.search }}
+            addresses: {{ network_generic.nameservers }}
+{% endif %}
+{% if network_generic.gateway is defined %}
+          gateway4: {{ network_generic.gateway }}
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{% if autoinstall_configure_storage %}
+  storage:
+    config:
+      # Disks
+{% for disk in autoinstall_storage[autoinstall_bios_mode]['disk'] %}
+      - { ptable: gpt, path: /dev/{{ disk.name }}, wipe: superblock, preserve: false, name: '', grub_device: {{ 'true' if disk.grub_device is defined and disk.grub_device else 'false' }}, type: disk, id: {{ disk.id }} }
+{% endfor %}
+      # Partitions
+{% for partition in autoinstall_storage[autoinstall_bios_mode]['partition'] %}
+      - { device: {{ partition.device }}, size: {{ partition.size }}, flag: '{{ partition.flag|default('') }}', number: {{ loop.index }}, preserve: false, grub_device: false, type: partition, id: {{ partition.id }} }
+{% endfor %}
+      # File systems
+{% for fs in autoinstall_storage[autoinstall_bios_mode]['filesystem'] %}
+      - { fstype: {{ fs.type }}, volume: {{ fs.partition }}, preserve: false, type: format, id: {{ fs.id }} }
+{% endfor %}
+      # LVM / VG
+{% for vg in autoinstall_storage[autoinstall_bios_mode]['lvm']['vg'] %}
+      - { name: {{ vg.name }}, devices: [{{ vg.devices|join(',') }}], preserve: false, type: lvm_volgroup, id: {{ vg.id }} }
+{% endfor %}
+      # LVM / LV
+{% for lv in autoinstall_storage[autoinstall_bios_mode]['lvm']['lv'] %}
+      - { name: {{ lv.name }}, volgroup: {{ lv.vg }}, size: {{ lv.size }}, type: lvm_partition, id: {{ lv.id }} }
+{% endfor %}
+      # LVM / file systems
+{% for fs in autoinstall_storage[autoinstall_bios_mode]['lvm']['fs'] %}
+      - { fstype: {{ fs.type }}, volume: {{ fs.lv }}, preserve: false, type: format, id: {{ fs.id }} }
+{% endfor %}
+      # mount
+{% for mount in autoinstall_storage[autoinstall_bios_mode]['mount'] %}
+      - { path: {{ mount.path }}, device: {{ mount.device }}, type: mount, id: {{ mount.id }} }
+{% endfor %}
+{% endif %}
+  identity:
+    hostname: "{{ autoinstall_network.hostname }}"
+    username: "{{ autoinstall_users.ansible_user }}"
+    password: "{{ autoinstall_users.ansible_password | string | password_hash('sha512') }}"
+  ssh:
+    install-server: yes
+{% if autoinstall_users.ansible_pubkeys is defined %}
+    authorized-keys:
+{% for ansible_pubkey in autoinstall_users.ansible_pubkeys %}
+      - {{ ansible_pubkey }}
+{% endfor %}
+{% else %}
+    authorized-keys: []
+{% endif %}
+    allow-pw: yes
+  packages:
+    - ufw
+  late-commands:
+    - sed -ie 's/GRUB_TIMEOUT=.*/GRUB_TIMEOUT=30/' /target/etc/default/grub
+    - echo "{{ autoinstall_users.ansible_user }} ALL=(ALL) NOPASSWD:ALL" > /target/etc/sudoers.d/{{ autoinstall_users.ansible_user }}
+    - chmod 440 /target/etc/sudoers.d/{{ autoinstall_users.ansible_user }}
+    - echo "root:{{ autoinstall_users.root_password | string | password_hash('sha512') }}" | chroot /target /usr/sbin/chpasswd -e
+    - {{ autoinstall_final_command | default('echo') }}

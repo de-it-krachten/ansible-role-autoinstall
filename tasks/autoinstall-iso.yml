@@ -1,0 +1,46 @@
+---
+
+- name: Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+  changed_when: false
+  register: __tmpdir
+
+- name: Set temporary filename
+  ansible.builtin.set_fact:
+    autoinstall_path_tmp: "{{ __tmpdir.path }}/{{ autoinstall_path | basename }}"
+    autoinstall_template: "{{ autoinstall_distro }}/user-data-{{ autoinstall_bios_mode }}.yml.j2"
+
+- name: Create customized user-data from template '{{ autoinstall_template }}'
+  ansible.builtin.template:
+    src: "{{ autoinstall_template }}"
+    dest: "{{ __tmpdir.path }}/user-data"
+    mode: "666"
+  changed_when: false
+
+- name: Create empty meta-data file in directory
+  ansible.builtin.file:
+    path: "{{ __tmpdir.path }}/meta-data"
+    state: touch
+    mode: "666"
+  changed_when: false
+
+- name: Create cloud-init configuration ISO  # noqa no-changed-when
+  ansible.builtin.command: >
+    cloud-localds {{ autoinstall_path_tmp }} user-data meta-data
+  args:
+    chdir: "{{ __tmpdir.path }}"
+  changed_when: false
+
+- name: Copy result to final location
+  ansible.builtin.copy:
+    src: "{{ autoinstall_path_tmp }}"
+    dest: "{{ autoinstall_path }}"
+    remote_src: yes
+    mode: "0666"
+
+- name: Delete temporay directory
+  ansible.builtin.file:
+    path: "{{ __tmpdir.path }}"
+    state: absent
+  changed_when: false

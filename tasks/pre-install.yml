@@ -1,0 +1,7 @@
+---
+
+- name: Install packages
+  ansible.builtin.package:
+    name: "{{ autoinstall_packages[ansible_os_family] }}"
+    state: present
+  become: yes

@@ -1,0 +1,12 @@
+---
+
+- name: Converge
+  hosts: all
+  become: "yes"
+  vars:
+    autoinstall_hostname: localhost
+    autoinstall_network_device: enp0s3
+  tasks:
+    - name: Include role 'ansible-role-autoinstall'
+      ansible.builtin.include_role:
+        name: ansible-role-autoinstall
