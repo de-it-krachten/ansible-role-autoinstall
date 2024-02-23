@@ -13,7 +13,7 @@ rules:
     max-spaces-after: 1
     level: error
   commas:
-    max-spaces-after: -1
+    max-spaces-after: 1
     level: error
   # comments: disable
   # comments-indentation: disable

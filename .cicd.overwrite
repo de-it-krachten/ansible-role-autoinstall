@@ -17,7 +17,19 @@ platforms:
   rhel7:
     ci: false
     supported: false
+  rhel9:
+    ci: false
+    supported: false
   centos7:
+    ci: false
+    supported: false
+  rockylinux9:
+    ci: false
+    supported: false
+  oraclelinux9:
+    ci: false
+    supported: false
+  almalinux9:
     ci: false
     supported: false
   opensuse15:

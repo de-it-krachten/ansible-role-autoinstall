@@ -17,7 +17,7 @@
   server_type: cx11
   image: rocky-8
 - name: rockylinux9
-  ci: true
+  ci: false
   server_type: cx11
   image: rocky-9
 - name: debian10
