@@ -1,0 +1,39 @@
+---
+
+- name: Create temporary directory
+  ansible.builtin.tempfile:
+    state: directory
+  changed_when: false
+  register: __tmpdir
+
+- name: For file mode, adapt the filename
+  ansible.builtin.set_fact:
+    autoinstall_path: "{{ autoinstall_path | regex_replace('\\.iso', '.yml') }}"
+
+- name: Set temporary filename
+  ansible.builtin.set_fact:
+    autoinstall_path_tmp: "{{ autoinstall_path }}.tmp"
+
+- name: Copy customized user-data
+  ansible.builtin.template:
+    src: "{{ autoinstall_distro }}/user-data-{{ autoinstall_bios_mode }}.yml.j2"
+    dest: "{{ autoinstall_path_tmp }}"
+    remote_src: yes
+    mode: "644"
+  changed_when: false
+
+- name: Copy result to final location
+  ansible.builtin.template:
+    src: "{{ autoinstall_path_tmp }}"
+    dest: "{{ autoinstall_path }}"
+    remote_src: yes
+    mode: "644"
+
+- name: Delete temporay directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ __tmpdir.path }}"
+    - "{{ autoinstall_path_tmp }}"
+  changed_when: false

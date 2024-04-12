@@ -1,0 +1,22 @@
+---
+
+- name: Assertions
+  ansible.builtin.assert:
+    that:
+      - autoinstall_hostname is defined
+      - autoinstall_network_device is defined
+
+- name: Install packages
+  ansible.builtin.include_tasks:
+    file: pre-install.yml
+
+- name: Create ubuntu2204 iso w/ autoinstall activated
+  ansible.builtin.include_tasks:
+    file: ubuntu2204-iso.yml
+  when: autoinstall_update_vendor_iso | bool
+
+- name: Create autoinstall (mode={{ autoinstall_format }})
+  ansible.builtin.include_tasks:
+    file: autoinstall-{{ autoinstall_format }}.yml
+    apply:
+      tags: molecule-idempotence-notest

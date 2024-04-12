@@ -1,0 +1,61 @@
+---
+
+# Generic
+generic:
+  role: ansible-role-autoinstall
+  role_short: autoinstall
+  role_description: |
+    Creates autoinstall file to Ubuntu installation. 
+  collections: []
+
+molecule:
+  requirements:
+    roles_extra: []
+
+# Supported platforms
+platforms:
+  rhel7:
+    ci: false
+    supported: false
+  rhel9:
+    ci: false
+    supported: false
+  centos7:
+    ci: false
+    supported: false
+  rockylinux9:
+    ci: false
+    supported: false
+  oraclelinux9:
+    ci: false
+    supported: false
+  almalinux9:
+    ci: false
+    supported: false
+  opensuse15:
+    ci: false
+    supported: false
+  alpine3:
+    ci: false
+    supported: false
+
+# Molecule
+molecule:
+  requirements:
+    roles_extra: []
+#  prepare:
+#    vars:
+#      activate_epel: true
+#      install_python: true
+#      python38: false
+#      python39: true
+#      python311: true
+  converge:
+    vars:
+      autoinstall_hostname: localhost
+      autoinstall_network_device: enp0s3
+
+## CI templates
+#ci_templates:
+#  converge.yml:
+#    force: false
