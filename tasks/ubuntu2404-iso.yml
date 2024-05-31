@@ -1,0 +1,147 @@
+---
+
+- name: Get settings
+  ansible.builtin.set_fact:
+    autoinstall_iso_file: "{{ management_server_iso_location }}/{{ os_iso['ubuntu2404']['url'] | basename }}"
+    autoinstall_iso_file_custom: "{{ management_server_iso_location }}/{{ os_iso['ubuntu2404']['url'] | basename | regex_replace('\\.iso', '-autoinstall.iso') }}"
+
+- name: Show settings
+  ansible.builtin.debug:
+    msg:
+      autoinstall_iso_file: "{{ autoinstall_iso_file }}"
+      autoinstall_iso_file_custom: "{{ autoinstall_iso_file_custom }}"
+
+- name: Cleanup temporary directories
+  ansible.builtin.file:
+    path: "{{ autoinstall_iso_tmpdir }}"
+    state: absent
+  become: yes
+
+- name: Create temporary directories
+  ansible.builtin.file:
+    path: "{{ autoinstall_iso_tmpdir }}"
+    state: directory
+    mode: "0700"
+
+- name: Extract ISO
+  ansible.builtin.command:
+    cmd: 7z -y x {{ autoinstall_iso_file }} -osource-files
+  changed_when: false
+  args:
+    chdir: "{{ autoinstall_iso_tmpdir }}"
+
+- name: Move '[BOOT]'
+  ansible.builtin.command:
+    cmd: mv '[BOOT]' ../BOOT
+  changed_when: false
+  args:
+    chdir: "{{ autoinstall_iso_tmpdir }}/source-files"
+
+# grub.cfg
+
+- name: Generic
+  when: autoinstall_iso_type == 'generic'
+  become: yes
+  block:
+
+    - name: Decrease timeout
+      ansible.builtin.replace:
+        dest: "{{ autoinstall_iso_tmpdir }}/source-files/boot/grub/grub.cfg"
+        regexp: 'set timeout=.*'
+        replace: 'set timeout=10'
+
+    - name: Update menu entry name
+      ansible.builtin.replace:
+        dest: "{{ autoinstall_iso_tmpdir }}/source-files/boot/grub/grub.cfg"
+        regexp: 'menuentry "Try or Install Ubuntu Server"'
+        replace: 'menuentry "Autoinstall Ubuntu Server"'
+
+    - name: Edit grub.cfg and activate autoinstall
+      ansible.builtin.replace:
+        dest: "{{ autoinstall_iso_tmpdir }}/source-files/boot/grub/grub.cfg"
+        regexp: 'linux\s+/casper/vmlinuz\s+---'
+        replace: 'linux /casper/vmlinuz autoinstall ds=nocloud  ---'
+
+- name: Custom
+  when: autoinstall_iso_type == 'custom'
+  become: yes
+  block:
+
+    - name: Decrease timeout
+      ansible.builtin.replace:
+        dest: "{{ autoinstall_iso_tmpdir }}/source-files/boot/grub/grub.cfg"
+        regexp: 'set timeout=.*'
+        replace: 'set timeout=10'
+
+    - name: Update menu entry name
+      ansible.builtin.replace:
+        dest: "{{ autoinstall_iso_tmpdir }}/source-files/boot/grub/grub.cfg"
+        regexp: 'menuentry "Try or Install Ubuntu Server"'
+        replace: 'menuentry "Autoinstall Ubuntu Server"'
+
+    - name: Edit grub.cfg and activate autoinstall
+      ansible.builtin.replace:
+        dest: "{{ autoinstall_iso_tmpdir }}/source-files/boot/grub/grub.cfg"
+        regexp: 'linux\s+/casper/vmlinuz\s+---'
+        replace: 'linux /casper/vmlinuz quiet autoinstall ds=nocloud\;s=/cdrom/autoinstall/  ---'
+
+    - name: Create directory 'autoinstall'
+      ansible.builtin.file:
+        path: "{{ autoinstall_iso_tmpdir }}/source-files/autoinstall/"
+        state: directory
+        mode: "0755"
+
+    - name: Create empty file 'autoinstall/meta-data'
+      ansible.builtin.file:
+        path: "{{ autoinstall_iso_tmpdir }}/source-files/autoinstall/meta-data"
+        state: touch
+        mode: "0644"
+
+    - name: Copy customized user-data
+      ansible.builtin.template:
+        src: "{{ autoinstall_iso_distro }}/user-data-{{ biautoinstall_mode }}.yml.j2"
+        dest: "{{ autoinstall_iso_tmpdir }}/source-files/autoinstall/user-data"
+        remote_src: yes
+        mode: "666"
+
+- name: Delete md5sum file
+  ansible.builtin.file:
+    path: "{{ autoinstall_iso_tmpdir }}/source-files/md5sum.txt"
+    state: absent
+
+- name: Create empty md5sum file
+  ansible.builtin.file:
+    path: "{{ autoinstall_iso_tmpdir }}/source-files/md5sum.txt"
+    state: touch
+    mode: "0666"
+
+- name: Create custom Ubuntu ISO
+  ansible.builtin.command: >-
+    xorriso -as mkisofs -r
+      -V 'Ubuntu 24.04 LTS AUTO (EFIBIOS)'
+      -o {{ autoinstall_iso_file_custom }}
+      --grub2-mbr ../BOOT/1-Boot-NoEmul.img
+      -partition_offset 16
+      --mbr-force-bootable
+      -append_partition 2 28732ac11ff8d211ba4b00a0c93ec93b ../BOOT/2-Boot-NoEmul.img
+      -appended_part_as_gpt
+      -iso_mbr_part_type a2a0d0ebe5b9334487c068b6b72699c7
+      -c '/boot.catalog'
+      -b '/boot/grub/i386-pc/eltorito.img'
+      -no-emul-boot -boot-load-size 4
+      -boot-info-table
+      --grub2-boot-info
+      -eltorito-alt-boot
+      -e '--interval:appended_partition_2:::'
+      -no-emul-boot
+      .
+  changed_when: true
+  args:
+    chdir: "{{ autoinstall_iso_tmpdir }}/source-files"
+
+- name: Remove temporary directory structure
+  ansible.builtin.file:
+    path: "{{ autoinstall_iso_tmpdir }}"
+    state: absent
+  become: yes
+  when: autoinstall_cleanup | bool
