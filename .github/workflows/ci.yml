@@ -231,33 +231,49 @@ jobs:
             ansible_lint: "ansible-lint>6,<7"
             hetznercloud: True
 
-          # - name: fedora37_2.9
+          # - name: ubuntu2404_2.9
           #   runs_on: ubuntu-latest
-          #   distro: fedora37
+          #   distro: ubuntu2404
           #   playbook: converge.yml
           #   ansible: "ansible==2.9.27"
           #   ansible_lint: "ansible-lint==5.4.0"
           #   hetznercloud: True
-          # - name: fedora37_2.14
-          - name: fedora37
+          # - name: ubuntu2404_2.14
+          - name: ubuntu2404
             runs_on: ubuntu-latest
-            distro: fedora37
+            distro: ubuntu2404
             playbook: converge.yml
             ansible: "ansible-core>2.14,<2.15"
             ansible_lint: "ansible-lint>6,<7"
             hetznercloud: True
 
-          # - name: fedora38_2.9
+          # - name: fedora39_2.9
           #   runs_on: ubuntu-latest
-          #   distro: fedora38
+          #   distro: fedora39
           #   playbook: converge.yml
           #   ansible: "ansible==2.9.27"
           #   ansible_lint: "ansible-lint==5.4.0"
           #   hetznercloud: True
-          # - name: fedora38_2.14
-          - name: fedora38
+          # - name: fedora39_2.14
+          - name: fedora39
             runs_on: ubuntu-latest
-            distro: fedora38
+            distro: fedora39
+            playbook: converge.yml
+            ansible: "ansible-core>2.14,<2.15"
+            ansible_lint: "ansible-lint>6,<7"
+            hetznercloud: True
+
+          # - name: fedora40_2.9
+          #   runs_on: ubuntu-latest
+          #   distro: fedora40
+          #   playbook: converge.yml
+          #   ansible: "ansible==2.9.27"
+          #   ansible_lint: "ansible-lint==5.4.0"
+          #   hetznercloud: True
+          # - name: fedora40_2.14
+          - name: fedora40
+            runs_on: ubuntu-latest
+            distro: fedora40
             playbook: converge.yml
             ansible: "ansible-core>2.14,<2.15"
             ansible_lint: "ansible-lint>6,<7"
