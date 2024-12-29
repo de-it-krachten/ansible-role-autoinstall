@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/de-it-krachten/ansible-role-autoinstall/compare/v1.1.0...v1.2.0) (2024-12-29)
+
+
+### Features
+
+* Update supported platforms & CI ([dbc6028](https://github.com/de-it-krachten/ansible-role-autoinstall/commit/dbc6028c45f08a2d280edcdafe1319fb3df44f01))
+
 # [1.1.0](https://github.com/de-it-krachten/ansible-role-autoinstall/compare/v1.0.0...v1.1.0) (2024-05-31)
 
 
