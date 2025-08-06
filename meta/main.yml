@@ -9,21 +9,8 @@ galaxy_info:
   license: MIT
   min_ansible_version: '2.9'
   platforms:
-    - name: EL
-      versions:
-        - '8'
-    - name: opensuse
-      versions:
-        - all
-    - name: Debian
-      versions:
-        - bullseye
-        - bookworm
     - name: Ubuntu
       versions:
         - focal
         - jammy
-    - name: Fedora
-      versions:
-        - all
 dependencies: []

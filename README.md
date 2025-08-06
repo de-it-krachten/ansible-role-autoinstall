@@ -19,18 +19,9 @@ None
 
 Supported platforms
 
-- Red Hat Enterprise Linux 8<sup>1</sup>
-- RockyLinux 8
-- OracleLinux 8
-- AlmaLinux 8
-- SUSE Linux Enterprise 15<sup>1</sup>
-- Debian 11 (Bullseye)
-- Debian 12 (Bookworm)
 - Ubuntu 20.04 LTS
 - Ubuntu 22.04 LTS
 - Ubuntu 24.04 LTS
-- Fedora 40
-- Fedora 41
 
 Note:
 <sup>1</sup> : no automated testing is performed on these platforms
