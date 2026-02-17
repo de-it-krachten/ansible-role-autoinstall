@@ -1,10 +1,10 @@
 ---
 
 # Hostname
-autoinstall_hostname: template-ubuntu2204
+autoinstall_hostname: template-ubuntu2404
 
 # Autoinstall distribution
-autoinstall_distro: ubuntu2204
+autoinstall_distro: ubuntu2404
 
 # Autoinstall bios mode (uefi or legacy)
 autoinstall_bios_mode: uefi
@@ -14,6 +14,9 @@ autoinstall_format: iso
 
 # Cloudinit location
 autoinstall_path: /tmp/{{ autoinstall_hostname }}.iso
+
+# Autoinstall template
+autoinstall_template: "{{ autoinstall_distro }}/user-data-{{ autoinstall_bios_mode }}.yml.j2"
 
 autoinstall_packages:
   RedHat:
@@ -41,7 +44,6 @@ autoinstall_network:
 #      ip: [ '192.168.1.100/24' ]
 #      optional: false
 #      dhcp: false
-
 
 # Users
 autoinstall_users:

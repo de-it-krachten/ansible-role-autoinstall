@@ -19,21 +19,21 @@ None
 
 Supported platforms
 
-- Ubuntu 20.04 LTS
 - Ubuntu 22.04 LTS
 - Ubuntu 24.04 LTS
 
 Note:
 <sup>1</sup> : no automated testing is performed on these platforms
 
+
 ## Role Variables
 ### defaults/main.yml
 <pre><code>
 # Hostname
-autoinstall_hostname: template-ubuntu2204
+autoinstall_hostname: template-ubuntu2404
 
 # Autoinstall distribution
-autoinstall_distro: ubuntu2204
+autoinstall_distro: ubuntu2404
 
 # Autoinstall bios mode (uefi or legacy)
 autoinstall_bios_mode: uefi
@@ -43,6 +43,9 @@ autoinstall_format: iso
 
 # Cloudinit location
 autoinstall_path: /tmp/{{ autoinstall_hostname }}.iso
+
+# Autoinstall template
+autoinstall_template: "{{ autoinstall_distro }}/user-data-{{ autoinstall_bios_mode }}.yml.j2"
 
 autoinstall_packages:
   RedHat:
@@ -70,7 +73,6 @@ autoinstall_network:
 #      ip: [ '192.168.1.100/24' ]
 #      optional: false
 #      dhcp: false
-
 
 # Users
 autoinstall_users:
@@ -190,8 +192,254 @@ autoinstall_final_command: "shutdown -h now"
   hosts: all
   become: 'yes'
   vars:
+    molecule_driver: '{{ lookup(''env'', ''MOLECULE_DRIVER_NAME'') }}'
+    management_server_iso_location: /tmp
     autoinstall_hostname: localhost
     autoinstall_network_device: enp0s3
+    autoinstall_bios_mode: uefi
+    autoinstall_format: file
+    autoinstall_path: /tmp/{{ autoinstall_hostname }}.yml
+    autoinstall_network:
+      hostname: server.example.com
+      devices:
+        - device: enp0s3
+          dhcp: true
+    autoinstall_storage:
+      legacy:
+        disk:
+          - name: sda
+            id: disk-sda
+            lvm: false
+            grub_device: true
+        partition:
+          - name: grub
+            id: partition-0
+            device: disk-sda
+            size: 1M
+            flag: bios_grub
+          - name: boot
+            id: partition-1
+            device: disk-sda
+            size: 1G
+          - name: lvm
+            id: partition-2
+            device: disk-sda
+            size: -1
+        filesystem:
+          - name: boot
+            id: format-0
+            type: ext4
+            partition: partition-1
+        lvm:
+          vg:
+            - name: rootvg
+              id: lvm_volgroup-0
+              devices:
+                - partition-2
+          lv:
+            - name: lv_root
+              id: lvm_partition-0
+              vg: lvm_volgroup-0
+              size: 8G
+            - name: lv_home
+              id: lvm_partition-1
+              vg: lvm_volgroup-0
+              size: 10G
+            - name: lv_var
+              id: lvm_partition-2
+              vg: lvm_volgroup-0
+              size: 4G
+            - name: lv_varlog
+              id: lvm_partition-3
+              vg: lvm_volgroup-0
+              size: 5G
+            - name: lv_usrlocal
+              id: lvm_partition-4
+              vg: lvm_volgroup-0
+              size: 1G
+            - name: lv_opt
+              id: lvm_partition-5
+              vg: lvm_volgroup-0
+              size: 4G
+            - name: lv_tmp
+              id: lvm_partition-6
+              vg: lvm_volgroup-0
+              size: 4G
+          fs:
+            - name: lv_root
+              id: format-3
+              lv: lvm_partition-0
+              type: ext4
+            - name: lv_home
+              id: format-4
+              lv: lvm_partition-1
+              type: ext4
+            - name: lv_var
+              id: format-5
+              lv: lvm_partition-2
+              type: ext4
+            - name: lv_varlog
+              id: format-6
+              lv: lvm_partition-3
+              type: ext4
+            - name: lv_usrlocal
+              id: format-7
+              lv: lvm_partition-4
+              type: ext4
+            - name: lv_opt
+              id: format-8
+              lv: lvm_partition-5
+              type: ext4
+            - name: lv_tmp
+              id: format-9
+              lv: lvm_partition-6
+              type: ext4
+        mount:
+          - path: /
+            id: mount-3
+            device: format-3
+          - path: /home
+            id: mount-4
+            device: format-4
+          - path: /var
+            id: mount-5
+            device: format-5
+          - path: /var/log
+            id: mount-6
+            device: format-6
+          - path: /usr/local
+            id: mount-7
+            device: format-7
+          - path: /opt
+            id: mount-8
+            device: format-8
+          - path: /tmp
+            id: mount-9
+            device: format-9
+          - path: /boot
+            id: mount-10
+            device: format-0
+      uefi:
+        disk:
+          - name: sda
+            id: disk-sda
+            lvm: false
+        partition:
+          - name: efi
+            id: partition-0
+            device: disk-sda
+            size: 1G
+            flag: boot
+            grub_device: true
+          - name: boot
+            id: partition-1
+            device: disk-sda
+            size: 1G
+          - name: lvm
+            id: partition-2
+            device: disk-sda
+            size: -1
+        filesystem:
+          - name: boot
+            id: format-0
+            type: fat32
+            partition: partition-0
+          - name: boot
+            id: format-1
+            type: ext4
+            partition: partition-1
+        lvm:
+          vg:
+            - name: rootvg
+              id: lvm_volgroup-0
+              devices:
+                - partition-2
+          lv:
+            - name: lv_root
+              id: lvm_partition-0
+              vg: lvm_volgroup-0
+              size: 8G
+            - name: lv_home
+              id: lvm_partition-1
+              vg: lvm_volgroup-0
+              size: 10G
+            - name: lv_var
+              id: lvm_partition-2
+              vg: lvm_volgroup-0
+              size: 4G
+            - name: lv_varlog
+              id: lvm_partition-3
+              vg: lvm_volgroup-0
+              size: 5G
+            - name: lv_usrlocal
+              id: lvm_partition-4
+              vg: lvm_volgroup-0
+              size: 1G
+            - name: lv_opt
+              id: lvm_partition-5
+              vg: lvm_volgroup-0
+              size: 4G
+            - name: lv_tmp
+              id: lvm_partition-6
+              vg: lvm_volgroup-0
+              size: 4G
+          fs:
+            - name: lv_root
+              id: format-3
+              lv: lvm_partition-0
+              type: ext4
+            - name: lv_home
+              id: format-4
+              lv: lvm_partition-1
+              type: ext4
+            - name: lv_var
+              id: format-5
+              lv: lvm_partition-2
+              type: ext4
+            - name: lv_varlog
+              id: format-6
+              lv: lvm_partition-3
+              type: ext4
+            - name: lv_usrlocal
+              id: format-7
+              lv: lvm_partition-4
+              type: ext4
+            - name: lv_opt
+              id: format-8
+              lv: lvm_partition-5
+              type: ext4
+            - name: lv_tmp
+              id: format-9
+              lv: lvm_partition-6
+              type: ext4
+        mount:
+          - path: /
+            id: mount-3
+            device: format-3
+          - path: /home
+            id: mount-4
+            device: format-4
+          - path: /var
+            id: mount-5
+            device: format-5
+          - path: /var/log
+            id: mount-6
+            device: format-6
+          - path: /usr/local
+            id: mount-7
+            device: format-7
+          - path: /opt
+            id: mount-8
+            device: format-8
+          - path: /tmp
+            id: mount-9
+            device: format-9
+          - path: /boot
+            id: mount-10
+            device: format-1
+          - path: /boot/efi
+            id: mount-11
+            device: format-0
   tasks:
     - name: Include role 'autoinstall'
       ansible.builtin.include_role:

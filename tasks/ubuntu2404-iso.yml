@@ -2,8 +2,15 @@
 
 - name: Get settings
   ansible.builtin.set_fact:
-    autoinstall_iso_file: "{{ management_server_iso_location }}/{{ os_iso['ubuntu2404']['url'] | basename }}"
-    autoinstall_iso_file_custom: "{{ management_server_iso_location }}/{{ os_iso['ubuntu2404']['url'] | basename | regex_replace('\\.iso', '-autoinstall.iso') }}"
+    autoinstall_iso_url: "{{ os_iso[autoinstall_distro]['url'] }}"
+    autoinstall_iso_file: "{{ management_server_iso_location }}/{{ os_iso[autoinstall_distro]['url'] | basename }}"
+    autoinstall_iso_file_custom: "{{ management_server_iso_location }}/{{ os_iso[autoinstall_distro]['url'] | basename | regex_replace('\\.iso', '-autoinstall.iso') }}"
+
+- name: Download the ISO file
+  ansible.builtin.get_url:
+    url: "{{ autoinstall_iso_url }}"
+    dest: "{{ autoinstall_iso_file }}"
+    mode: "0644"
 
 - name: Show settings
   ansible.builtin.debug:

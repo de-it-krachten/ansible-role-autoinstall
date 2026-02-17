@@ -26,7 +26,18 @@ autoinstall:
     config:
       # Disks
 {% for disk in autoinstall_storage[autoinstall_bios_mode]['disk'] %}
+{% if disk.name == 'random' %}
+      - id: {{ disk.id }}
+        type: disk
+        match:
+          size: "{{ disk.size }}"
+        preserve: false
+        ptable: gpt
+        wipe: superblock-recursive
+        grub_device: true
+{% else %}
       - { ptable: gpt, path: /dev/{{ disk.name }}, wipe: superblock, preserve: false, name: '', grub_device: {{ 'true' if disk.grub_device is defined and disk.grub_device else 'false' }}, type: disk, id: {{ disk.id }} }
+{% endif %}
 {% endfor %}
       # Partitions
 {% for partition in autoinstall_storage[autoinstall_bios_mode]['partition'] %}
