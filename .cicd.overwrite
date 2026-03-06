@@ -8,90 +8,63 @@ generic:
     Creates autoinstall file to Ubuntu installation. 
   collections: []
 
+# Supported platforms
+platforms:
+  rhel8:
+    supported: false
+    ci: false
+  rhel9:
+    supported: false
+    ci: false
+  rhel10:
+    supported: false
+    ci: false
+  rockylinux8:
+    supported: false
+    ci: false
+  rockylinux9:
+    supported: false
+    ci: false
+  rockylinux10:
+    supported: false
+    ci: false
+  oraclelinux8:
+    supported: false
+    ci: false
+  oraclelinux9:
+    supported: false
+    ci: false
+  oraclelinux10:
+    supported: false
+    ci: false
+  almalinux8:
+    supported: false
+    ci: false
+  almalinux9:
+    supported: false
+    ci: false
+  almalinux10:
+    supported: false
+    ci: false
+  debian11:
+    supported: false
+    ci: false
+  debian12:
+    supported: false
+    ci: false
+  debian13:
+    supported: false
+    ci: false
+  fedora42:
+    supported: false
+    ci: false
+  fedora43:
+    supported: false
+    ci: false
+
 molecule:
   requirements:
     roles_extra: []
-
-# Supported platforms
-platforms:
-  rhel7:
-    ci: false
-    supported: false
-  rhel8:
-    ci: false
-    supported: false
-  rhel9:
-    ci: false
-    supported: false
-  rhel10:
-    ci: false
-    supported: false
-  centos7:
-    ci: false
-    supported: false
-  rockylinux8:
-    ci: false
-    supported: false
-  rockylinux9:
-    ci: false
-    supported: false
-  rockylinux10:
-    ci: false
-    supported: false
-  oraclelinux8:
-    ci: false
-    supported: false
-  oraclelinux9:
-    ci: false
-    supported: false
-  oraclelinux10:
-    ci: false
-    supported: false
-  almalinux8:
-    ci: false
-    supported: false
-  almalinux9:
-    ci: false
-    supported: false
-  almalinux10:
-    ci: false
-    supported: false
-  opensuse15:
-    ci: false
-    supported: false
-  opensuse16:
-    ci: false
-    supported: false
-  sles15:
-    ci: false
-    supported: false
-  sles16:
-    ci: false
-    supported: false
-  debian10:
-    ci: false
-    supported: false
-  debian11:
-    ci: false
-    supported: false
-  debian12:
-    ci: false
-    supported: false
-  debian13:
-    ci: false
-    supported: false
-  fedora41:
-    ci: false
-    supported: false
-  fedora42:
-    ci: false
-    supported: false
-  fedora43:
-    ci: false
-    supported: false
-  alpine3:
-    ci: false
-    supported: false
 
 # Molecule
 molecule:
@@ -198,7 +171,6 @@ molecule:
             - { path: /tmp,        id: mount-9, device: format-9 }
             - { path: /boot,       id: mount-10, device: format-1 }
             - { path: /boot/efi,   id: mount-11, device: format-0 }
-
 
 ## CI templates
 #ci_templates:
