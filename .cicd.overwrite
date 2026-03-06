@@ -62,10 +62,6 @@ platforms:
     supported: false
     ci: false
 
-molecule:
-  requirements:
-    roles_extra: []
-
 # Molecule
 molecule:
   requirements:
