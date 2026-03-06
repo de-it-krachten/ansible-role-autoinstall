@@ -1,3 +1,10 @@
+# [1.4.0](https://github.com/de-it-krachten/ansible-role-autoinstall/compare/v1.3.0...v1.4.0) (2026-03-06)
+
+
+### Features
+
+* Add support for Ubuntu 24.04 ([2e85c31](https://github.com/de-it-krachten/ansible-role-autoinstall/commit/2e85c311dea6cf386c67d2bfdacb45af16d1b1a9))
+
 # [1.3.0](https://github.com/de-it-krachten/ansible-role-autoinstall/compare/v1.2.0...v1.3.0) (2025-08-06)
 
 
