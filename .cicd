@@ -441,7 +441,7 @@ platforms:
   sles15:
     name: SUSE Linux Enterprise 15
     ci: false
-    supported: true
+    supported: false
     galaxy:
       name: SLES
       version: all
@@ -464,7 +464,7 @@ platforms:
   sles16:
     name: SUSE Linux Enterprise 16
     ci: false
-    supported: true
+    supported: false
     galaxy:
       name: SLES
       version: all
@@ -486,8 +486,8 @@ platforms:
 #            auto_config: true
   opensuse15:
     name: openSUSE Leap 15
-    ci: true
-    supported: true
+    ci: false
+    supported: false
     galaxy:
       name: opensuse
       version: all
@@ -509,8 +509,8 @@ platforms:
             auto_config: true
   opensuse16:
     name: openSUSE Leap 16
-    ci: true
-    supported: true
+    ci: false
+    supported: false
     galaxy:
       name: opensuse
       version: all
@@ -530,8 +530,8 @@ platforms:
           - network_name: private_network
             type: dhcp
             auto_config: true
-  opensusetumbleweed15:
-    name: openSUSE Tumbleweed 15
+  opensusetumbleweed:
+    name: openSUSE Tumbleweed
     ci: false
     supported: false
     galaxy:
