@@ -1,3 +1,11 @@
+# [1.5.0](https://github.com/de-it-krachten/ansible-role-autoinstall/compare/v1.4.0...v1.5.0) (2026-07-23)
+
+
+### Features
+
+* Add support for ansible-core 2.20+ ([5b10baf](https://github.com/de-it-krachten/ansible-role-autoinstall/commit/5b10bafdef628680614a376d6fa59c6d898d10da))
+* Added support for Ubuntu 26.04 LTS ([0b7dbb0](https://github.com/de-it-krachten/ansible-role-autoinstall/commit/0b7dbb06b8453054dc4d22b05163ba3e19369c63))
+
 # [1.4.0](https://github.com/de-it-krachten/ansible-role-autoinstall/compare/v1.3.0...v1.4.0) (2026-03-06)
 
 
