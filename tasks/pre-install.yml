@@ -2,6 +2,6 @@
 
 - name: Install packages
   ansible.builtin.package:
-    name: "{{ autoinstall_packages[ansible_os_family] }}"
+    name: "{{ autoinstall_packages[ansible_facts.os_family] }}"
     state: present
   become: yes
