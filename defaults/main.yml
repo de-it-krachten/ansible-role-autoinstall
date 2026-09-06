@@ -71,30 +71,37 @@ autoinstall_storage:
         - { name: rootvg, id: lvm_volgroup-0, devices: [ partition-2 ] }
         # - { name: datavg, id: lvm_volgroup-1, devices: [ partition-3 ] }
       lv:
-        - { name: lv_root, id: lvm_partition-0, vg: lvm_volgroup-0, size: 8G }
-        - { name: lv_home, id: lvm_partition-1, vg: lvm_volgroup-0, size: 10G }
-        - { name: lv_var, id: lvm_partition-2, vg: lvm_volgroup-0, size: 4G }
-        - { name: lv_varlog, id: lvm_partition-3, vg: lvm_volgroup-0, size: 5G }
-        - { name: lv_usrlocal, id: lvm_partition-4, vg: lvm_volgroup-0, size: 1G }
-        - { name: lv_opt, id: lvm_partition-5, vg: lvm_volgroup-0, size: 4G }
-        - { name: lv_tmp, id: lvm_partition-6, vg: lvm_volgroup-0, size: 4G }
+        - { name: lv_root,     id: lvm_partition-0, vg: lvm_volgroup-0, size: 2G }
+        - { name: lv_usr,      id: lvm_partition-1, vg: lvm_volgroup-0, size: 8G }
+        - { name: lv_home,     id: lvm_partition-2, vg: lvm_volgroup-0, size: 10G }
+        - { name: lv_var,      id: lvm_partition-3, vg: lvm_volgroup-0, size: 4G }
+        - { name: lv_varlog,   id: lvm_partition-4, vg: lvm_volgroup-0, size: 5G }
+        - { name: lv_usrlocal, id: lvm_partition-5, vg: lvm_volgroup-0, size: 1G }
+        - { name: lv_opt,      id: lvm_partition-6, vg: lvm_volgroup-0, size: 4G }
+        - { name: lv_tmp,      id: lvm_partition-7, vg: lvm_volgroup-0, size: 4G }
+        - { name: lv_swap,     id: lvm_partition-8, vg: lvm_volgroup-0, size: 4G }
+
       fs:
-        - { name: lv_root, id: format-3, lv: lvm_partition-0, type: ext4 }
-        - { name: lv_home, id: format-4, lv: lvm_partition-1, type: ext4 }
-        - { name: lv_var, id: format-5, lv: lvm_partition-2, type: ext4 }
-        - { name: lv_varlog, id: format-6, lv: lvm_partition-3, type: ext4 }
-        - { name: lv_usrlocal, id: format-7, lv: lvm_partition-4, type: ext4 }
-        - { name: lv_opt, id: format-8, lv: lvm_partition-5, type: ext4 }
-        - { name: lv_tmp, id: format-9, lv: lvm_partition-6, type: ext4 }
+        - { name: lv_root,     id: format-3,  lv: lvm_partition-0, type: ext4 }
+        - { name: lv_usr,      id: format-4,  lv: lvm_partition-1, type: ext4 }
+        - { name: lv_home,     id: format-5,  lv: lvm_partition-2, type: ext4 }
+        - { name: lv_var,      id: format-6,  lv: lvm_partition-3, type: ext4 }
+        - { name: lv_varlog,   id: format-7,  lv: lvm_partition-4, type: ext4 }
+        - { name: lv_usrlocal, id: format-8,  lv: lvm_partition-5, type: ext4 }
+        - { name: lv_opt,      id: format-9,  lv: lvm_partition-6, type: ext4 }
+        - { name: lv_tmp,      id: format-10, lv: lvm_partition-7, type: ext4 }
+        - { name: lv_swap,     id: format-11, lv: lvm_partition-8, type: swap }
     mount:
-      - { path: /, id: mount-3, device: format-3 }
-      - { path: /home, id: mount-4, device: format-4 }
-      - { path: /var, id: mount-5, device: format-5 }
-      - { path: /var/log, id: mount-6, device: format-6 }
-      - { path: /usr/local, id: mount-7, device: format-7 }
-      - { path: /opt, id: mount-8, device: format-8 }
-      - { path: /tmp, id: mount-9, device: format-9 }
-      - { path: /boot, id: mount-10, device: format-0 }
+      - { path: /,          id: mount-3,  device: format-3 }
+      - { path: /usr,       id: mount-4,  device: format-4 }
+      - { path: /home,      id: mount-5,  device: format-5 }
+      - { path: /var,       id: mount-6,  device: format-6 }
+      - { path: /var/log,   id: mount-7,  device: format-7 }
+      - { path: /usr/local, id: mount-8,  device: format-8 }
+      - { path: /opt,       id: mount-9,  device: format-9 }
+      - { path: /tmp,       id: mount-10, device: format-10 }
+      - { path: /boot,      id: mount-11, device: format-0 }
+      - { path: '',         id: mount-12, device: format-11 }
   uefi:
     disk:
       - { name: sda, id: disk-sda, lvm: false }
@@ -110,31 +117,37 @@ autoinstall_storage:
       vg:
         - { name: rootvg, id: lvm_volgroup-0, devices: [ partition-2 ] }
       lv:
-        - { name: lv_root, id: lvm_partition-0, vg: lvm_volgroup-0, size: 8G }
-        - { name: lv_home, id: lvm_partition-1, vg: lvm_volgroup-0, size: 10G }
-        - { name: lv_var, id: lvm_partition-2, vg: lvm_volgroup-0, size: 4G }
-        - { name: lv_varlog, id: lvm_partition-3, vg: lvm_volgroup-0, size: 5G }
-        - { name: lv_usrlocal, id: lvm_partition-4, vg: lvm_volgroup-0, size: 1G }
-        - { name: lv_opt, id: lvm_partition-5, vg: lvm_volgroup-0, size: 4G }
-        - { name: lv_tmp, id: lvm_partition-6, vg: lvm_volgroup-0, size: 4G }
+        - { name: lv_root,     id: lvm_partition-0, vg: lvm_volgroup-0, size: 2G }
+        - { name: lv_usr,      id: lvm_partition-1, vg: lvm_volgroup-0, size: 8G }
+        - { name: lv_home,     id: lvm_partition-2, vg: lvm_volgroup-0, size: 10G }
+        - { name: lv_var,      id: lvm_partition-3, vg: lvm_volgroup-0, size: 4G }
+        - { name: lv_varlog,   id: lvm_partition-4, vg: lvm_volgroup-0, size: 5G }
+        - { name: lv_usrlocal, id: lvm_partition-5, vg: lvm_volgroup-0, size: 1G }
+        - { name: lv_opt,      id: lvm_partition-6, vg: lvm_volgroup-0, size: 4G }
+        - { name: lv_tmp,      id: lvm_partition-7, vg: lvm_volgroup-0, size: 4G }
+        - { name: lv_swap,     id: lvm_partition-8, vg: lvm_volgroup-0, size: 4G }
       fs:
-        - { name: lv_root, id: format-3, lv: lvm_partition-0, type: ext4 }
-        - { name: lv_home, id: format-4, lv: lvm_partition-1, type: ext4 }
-        - { name: lv_var, id: format-5, lv: lvm_partition-2, type: ext4 }
-        - { name: lv_varlog, id: format-6, lv: lvm_partition-3, type: ext4 }
-        - { name: lv_usrlocal, id: format-7, lv: lvm_partition-4, type: ext4 }
-        - { name: lv_opt, id: format-8, lv: lvm_partition-5, type: ext4 }
-        - { name: lv_tmp, id: format-9, lv: lvm_partition-6, type: ext4 }
+        - { name: lv_root,     id: format-3,  lv: lvm_partition-0, type: ext4 }
+        - { name: lv_usr,      id: format-4,  lv: lvm_partition-1, type: ext4 }
+        - { name: lv_home,     id: format-5,  lv: lvm_partition-2, type: ext4 }
+        - { name: lv_var,      id: format-6,  lv: lvm_partition-3, type: ext4 }
+        - { name: lv_varlog,   id: format-7,  lv: lvm_partition-4, type: ext4 }
+        - { name: lv_usrlocal, id: format-8,  lv: lvm_partition-5, type: ext4 }
+        - { name: lv_opt,      id: format-9,  lv: lvm_partition-6, type: ext4 }
+        - { name: lv_tmp,      id: format-10, lv: lvm_partition-7, type: ext4 }
+        - { name: lv_swap,     id: format-11, lv: lvm_partition-8, type: swap }
     mount:
-      - { path: /, id: mount-3, device: format-3 }
-      - { path: /home, id: mount-4, device: format-4 }
-      - { path: /var, id: mount-5, device: format-5 }
-      - { path: /var/log, id: mount-6, device: format-6 }
-      - { path: /usr/local, id: mount-7, device: format-7 }
-      - { path: /opt, id: mount-8, device: format-8 }
-      - { path: /tmp, id: mount-9, device: format-9 }
-      - { path: /boot, id: mount-10, device: format-1 }
-      - { path: /boot/efi, id: mount-11, device: format-0 }
+      - { path: /,          id: mount-3, device: format-3 }
+      - { path: /usr,       id: mount-4, device: format-4 }
+      - { path: /home,      id: mount-5, device: format-5 }
+      - { path: /var,       id: mount-6, device: format-6 }
+      - { path: /var/log,   id: mount-7, device: format-7 }
+      - { path: /usr/local, id: mount-8, device: format-8 }
+      - { path: /opt,       id: mount-9, device: format-9 }
+      - { path: /tmp,       id: mount-10, device: format-10}
+      - { path: /boot,      id: mount-11, device: format-1 }
+      - { path: /boot/efi,  id: mount-12, device: format-0 }
+      - { path: '',         id: mount-13, device: format-11 }
 
 
 # Create autoinstall enabled vendor ISO

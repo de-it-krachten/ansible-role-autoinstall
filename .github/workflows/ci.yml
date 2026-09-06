@@ -365,10 +365,11 @@ jobs:
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
+          ANSIBLE_INJECT_FACT_VARS: ${{ vars.ANSIBLE_INJECT_FACT_VARS || 'False' }}
           MOLECULE_DISTRO: ${{ matrix.distro }}
+          MOLECULE_DRIVER: ${{ vars.MOLECULE_DRIVER }}
           MOLECULE_PLAYBOOK: ${{ matrix.playbook }}
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-          MOLECULE_DRIVER: ${{ vars.MOLECULE_DRIVER }}
   molecule2:
     name: "${{ matrix.name }}"
     runs-on: "${{ matrix.runs_on }}"
@@ -540,8 +541,9 @@ jobs:
         env:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
+          ANSIBLE_INJECT_FACT_VARS: ${{ vars.ANSIBLE_INJECT_FACT_VARS || 'False' }}
           MOLECULE_DISTRO: ${{ matrix.distro }}
+          MOLECULE_DRIVER: ${{ vars.MOLECULE_DRIVER }}
           MOLECULE_PLAYBOOK: ${{ matrix.playbook }}
           HCLOUD_TOKEN: ${{ secrets.HCLOUD_TOKEN }}
-          MOLECULE_DRIVER: ${{ vars.MOLECULE_DRIVER }}
 
