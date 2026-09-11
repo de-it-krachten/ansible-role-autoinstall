@@ -9,7 +9,7 @@ autoinstall:
       version: 2
       ethernets:
 {% for item in autoinstall_network.devices %}
-{{ item.device }}:
+        {{ item.device }}:
           optional: {{ item.optional | default(false) | bool | ternary('yes', 'no' ) }}
 {% if item.dhcp | bool %}
           dhcp4: yes
