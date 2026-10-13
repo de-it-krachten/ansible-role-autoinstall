@@ -1,3 +1,15 @@
+# [1.6.0](https://github.com/de-it-krachten/ansible-role-autoinstall/compare/v1.5.0...v1.6.0) (2026-10-13)
+
+
+### Bug Fixes
+
+* fix typo in 24.04 UEFI template ([9075107](https://github.com/de-it-krachten/ansible-role-autoinstall/commit/9075107b3d900f710313283ab45dd1c1e8b09150))
+
+
+### Features
+
+* Activate swap on LVM (default) ([e7d196c](https://github.com/de-it-krachten/ansible-role-autoinstall/commit/e7d196c5d936e784f4b7b158f1a4726da3dfd2f5))
+
 # [1.5.0](https://github.com/de-it-krachten/ansible-role-autoinstall/compare/v1.4.0...v1.5.0) (2026-07-23)
 
 
