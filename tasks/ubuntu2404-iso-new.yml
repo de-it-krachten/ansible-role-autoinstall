@@ -1,0 +1,209 @@
+---
+# Builds an Ubuntu Server autoinstall ISO from a stock Ubuntu Server ISO.
+#
+# Required variables:
+#   os_iso[autoinstall_distro].url        ISO download URL
+#   management_server_iso_location        directory where ISOs are stored
+#   autoinstall_iso_tmpdir                scratch directory (wiped on every build)
+#   autoinstall_iso_type                  'generic' or 'custom'
+#   autoinstall_iso_template              user-data template on the controller ('custom' only)
+#
+# Optional variables:
+#   os_iso[autoinstall_distro].checksum   e.g. "sha256:https://releases.ubuntu.com/24.04/SHA256SUMS"
+#   os_iso[autoinstall_distro].volid      ISO volume label, max 32 characters
+#   autoinstall_force                     rebuild even if the custom ISO already exists (default: false)
+#   autoinstall_cleanup                   remove the scratch directory afterwards (default: true)
+#
+# Approach: instead of unpacking the whole ISO and rebuilding the boot setup by hand,
+# only the files that change are extracted, edited and mapped back into a copy of the
+# original image. '-boot_image any replay' reuses the original BIOS + UEFI boot setup,
+# so there is no dependency on 7-Zip's '[BOOT]' extraction.
+
+- name: Validate input
+  ansible.builtin.assert:
+    that:
+      - autoinstall_iso_type in ['generic', 'custom']
+      - autoinstall_iso_type == 'generic' or autoinstall_iso_template is defined
+    fail_msg: "autoinstall_iso_type must be 'generic' or 'custom'; 'custom' also requires autoinstall_iso_template"
+
+- name: Get settings
+  ansible.builtin.set_fact:
+    autoinstall_iso_url: "{{ os_iso[autoinstall_distro]['url'] }}"
+    autoinstall_iso_file: "{{ management_server_iso_location }}/{{ os_iso[autoinstall_distro]['url'] | basename }}"
+    autoinstall_iso_file_custom: "{{ management_server_iso_location }}/{{ os_iso[autoinstall_distro]['url'] | basename | regex_replace('\\.iso$', '-autoinstall.iso') }}"
+    autoinstall_iso_volid: "{{ os_iso[autoinstall_distro]['volid'] | default('Ubuntu 24.04 LTS AUTO (EFIBIOS)') }}"
+    autoinstall_iso_src: "{{ autoinstall_iso_tmpdir }}/source-files"
+    autoinstall_kernel_args: "{{ autoinstall_kernel_args_map[autoinstall_iso_type] }}"
+  vars:
+    autoinstall_kernel_args_map:
+      generic: 'autoinstall ds=nocloud'
+      # GRUB needs the ';' escaped, otherwise it ends the command
+      custom: 'quiet autoinstall ds=nocloud\;s=/cdrom/autoinstall/'
+
+- name: Validate volume label length
+  ansible.builtin.assert:
+    that: autoinstall_iso_volid | length <= 32
+    fail_msg: "ISO volume label '{{ autoinstall_iso_volid }}' is longer than 32 characters"
+
+- name: Install required tools
+  ansible.builtin.package:
+    name: xorriso
+    state: present
+  become: true
+
+- name: Download the ISO file
+  ansible.builtin.get_url:
+    url: "{{ autoinstall_iso_url }}"
+    dest: "{{ autoinstall_iso_file }}"
+    mode: "0644"
+    checksum: "{{ os_iso[autoinstall_distro]['checksum'] | default(omit) }}"
+
+- name: Check for an existing custom ISO
+  ansible.builtin.stat:
+    path: "{{ autoinstall_iso_file_custom }}"
+  register: autoinstall_custom_iso_stat
+
+- name: Show settings
+  ansible.builtin.debug:
+    msg:
+      autoinstall_iso_file: "{{ autoinstall_iso_file }}"
+      autoinstall_iso_file_custom: "{{ autoinstall_iso_file_custom }}"
+      autoinstall_iso_type: "{{ autoinstall_iso_type }}"
+      autoinstall_kernel_args: "{{ autoinstall_kernel_args }}"
+      rebuild: "{{ not autoinstall_custom_iso_stat.stat.exists or (autoinstall_force | default(false) | bool) }}"
+
+- name: Build custom ISO
+  when: not autoinstall_custom_iso_stat.stat.exists or (autoinstall_force | default(false) | bool)
+  block:
+
+    - name: Cleanup temporary directory
+      ansible.builtin.file:
+        path: "{{ autoinstall_iso_tmpdir }}"
+        state: absent
+
+    - name: Create temporary directory
+      ansible.builtin.file:
+        path: "{{ autoinstall_iso_tmpdir }}"
+        state: directory
+        mode: "0700"
+
+    - name: Extract grub.cfg and md5sum.txt from the ISO
+      ansible.builtin.command:
+        argv:
+          - xorriso
+          - -osirrox
+          - "on"
+          - -indev
+          - "{{ autoinstall_iso_file }}"
+          - -extract
+          - /boot/grub/grub.cfg
+          - "{{ autoinstall_iso_src }}/boot/grub/grub.cfg"
+          - -extract
+          - /md5sum.txt
+          - "{{ autoinstall_iso_src }}/md5sum.txt"
+      changed_when: true
+
+    # Files extracted from an ISO are read-only
+    - name: Make extracted files writable
+      ansible.builtin.command:
+        argv: [chmod, -R, u+w, "{{ autoinstall_iso_src }}"]
+      changed_when: true
+
+    # grub.cfg
+
+    - name: Patch grub.cfg
+      ansible.builtin.replace:
+        dest: "{{ autoinstall_iso_src }}/boot/grub/grub.cfg"
+        regexp: "{{ item.regexp }}"
+        replace: "{{ item.replace }}"
+      loop:
+        - regexp: 'set timeout=.*'
+          replace: 'set timeout=10'
+        - regexp: 'menuentry "Try or Install Ubuntu Server"'
+          replace: 'menuentry "Autoinstall Ubuntu Server"'
+        - regexp: 'linux\s+/casper/vmlinuz\s+---'
+          replace: 'linux /casper/vmlinuz {{ autoinstall_kernel_args }}  ---'
+      loop_control:
+        label: "{{ item.replace }}"
+
+    # NoCloud seed (custom only)
+
+    - name: Add NoCloud seed
+      when: autoinstall_iso_type == 'custom'
+      block:
+
+        - name: Create directory 'autoinstall'
+          ansible.builtin.file:
+            path: "{{ autoinstall_iso_src }}/autoinstall"
+            state: directory
+            mode: "0755"
+
+        - name: Create empty file 'autoinstall/meta-data'
+          ansible.builtin.copy:
+            content: ""
+            dest: "{{ autoinstall_iso_src }}/autoinstall/meta-data"
+            mode: "0644"
+
+        - name: Render customized user-data
+          ansible.builtin.template:
+            src: "{{ autoinstall_iso_template }}"
+            dest: "{{ autoinstall_iso_src }}/autoinstall/user-data"
+            mode: "0600"
+
+    # Keep the casper integrity check working by updating only the changed entries
+
+    - name: Update checksums of modified files in md5sum.txt
+      ansible.builtin.shell:
+        cmd: |
+          set -eu
+          files="./boot/grub/grub.cfg"
+          if [ -d ./autoinstall ]; then
+            files="$files $(find ./autoinstall -type f | sort | tr '\n' ' ')"
+          fi
+          for f in $files; do
+            grep -vF "  $f" md5sum.txt > md5sum.txt.new || true
+            mv md5sum.txt.new md5sum.txt
+          done
+          md5sum $files >> md5sum.txt
+          chmod 0644 md5sum.txt
+        chdir: "{{ autoinstall_iso_src }}"
+      changed_when: true
+
+    # Build
+
+    - name: Assemble xorriso file mappings
+      ansible.builtin.set_fact:
+        autoinstall_xorriso_maps: >-
+          {{ ['-map', autoinstall_iso_src ~ '/boot/grub/grub.cfg', '/boot/grub/grub.cfg',
+              '-map', autoinstall_iso_src ~ '/md5sum.txt', '/md5sum.txt']
+             + (['-map', autoinstall_iso_src ~ '/autoinstall', '/autoinstall']
+                if autoinstall_iso_type == 'custom' else []) }}
+
+    - name: Remove previous custom ISO
+      ansible.builtin.file:
+        path: "{{ autoinstall_iso_file_custom }}"
+        state: absent
+
+    - name: Create custom Ubuntu ISO
+      ansible.builtin.command:
+        argv: >-
+          {{ ['xorriso',
+              '-indev', autoinstall_iso_file,
+              '-outdev', autoinstall_iso_file_custom,
+              '-volid', autoinstall_iso_volid]
+             + autoinstall_xorriso_maps
+             + ['-boot_image', 'any', 'replay'] }}
+      changed_when: true
+
+    - name: Set permissions on custom ISO
+      ansible.builtin.file:
+        path: "{{ autoinstall_iso_file_custom }}"
+        mode: "0644"
+
+  always:
+
+    - name: Remove temporary directory
+      ansible.builtin.file:
+        path: "{{ autoinstall_iso_tmpdir }}"
+        state: absent
+      when: autoinstall_cleanup | default(true) | bool
