@@ -106,7 +106,7 @@
 
     - name: Copy customized user-data
       ansible.builtin.template:
-        src: "{{ autoinstall_iso_distro }}/user-data-{{ biautoinstall_mode }}.yml.j2"
+        src: "{{ autoinstall_iso_template }}"
         dest: "{{ autoinstall_iso_tmpdir }}/source-files/autoinstall/user-data"
         remote_src: yes
         mode: "666"
