@@ -152,3 +152,7 @@
     state: absent
   become: yes
   when: autoinstall_cleanup | bool
+
+- name: ISO location
+  ansible.builtin.debug:
+    msg: "{{ autoinstall_iso_file_custom }}"
